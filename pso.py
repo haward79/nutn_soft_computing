@@ -1,25 +1,6 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
-
-
-def create_gif(filename: str, frames: np.ndarray, interval: int = 300, loop: int = 0) -> None:
-
-    if len(filename) > 0:
-        frames = [Image.fromarray(frame) for frame in frames]
-        frames[0].save(filename, format="GIF", append_images=frames[1:], save_all=True, duration=interval, loop=loop)
-
-
-def evaluate_problem(input_set: np.ndarray) -> np.ndarray:
-
-    answer_set = []
-
-    for (x, y, z) in input_set:
-        answer = 20 + np.exp(1) - 20 * np.exp(-0.2 * (1/3 * (x**2 + y**2 + z**2))**0.5) - np.exp(1/3 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y) + np.cos(2 * np.pi * z)))
-        answer_set.append(answer)
-
-    return np.array(answer_set)
+from tool import evaluate_problem, plot_population, create_gif, print_result
 
 
 def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: float, right_boundary: float, max_iteration: int = 30, term_diff: float = 0.1) -> tuple:
@@ -44,21 +25,7 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
         fitness = evaluate_problem(position)
 
         # Plot particles for this generation.
-        fig = plt.figure()
-        ax = plt.axes(projection='3d')
-        ax.scatter(position[:, 0], position[:, 1], position[:, 2])
-        ax.set_title('Generation ' + str(gen_id + 1))
-
-        for i, label in enumerate(fitness):
-            ax.text(position[i][0], position[i][1], position[i][2], '%.2f' % (label,))
-
-        ax.set_xlim(left_boundary, right_boundary)
-        ax.set_ylim(left_boundary, right_boundary)
-        ax.set_zlim(left_boundary, right_boundary)
-        fig.canvas.draw()
-        frame = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        frame = frame.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        plt.close(fig)
+        frame = plot_population(gen_id, position, fitness, left_boundary, right_boundary)
         frames.append(frame)
 
         # Update pbest.
@@ -95,16 +62,10 @@ def pso_demo():
     (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.001)
 
     # Print table of records.
-    print('+-----+----------+--------------------------------+')
-    for (index, (point, fitness)) in enumerate(results):
-        print('| %3d   %8.4f   (%8.4f, %8.4f, %8.4f) |' % (index+1, fitness, point[0], point[1], point[2]))
-    print('+-----+----------+--------------------------------+')
-
-    print()
-    print('There is a min, %.4f, at (%.4f, %.4f, %.4f) !' % (gbest_fitness, gbest_position[0], gbest_position[1], gbest_position[2]))
+    print_result(gbest_position, gbest_fitness, results)
 
     # Create animation of records.
-    create_gif('pso.gif', frames)
+    create_gif('pso', frames)
 
 
 pso_demo()
