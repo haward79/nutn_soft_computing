@@ -22,7 +22,7 @@ def evaluate_problem(input_set: np.ndarray) -> np.ndarray:
     return np.array(answer_set)
 
 
-def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: float, right_boundary: float, max_iteration: int = 30) -> tuple:
+def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: float, right_boundary: float, max_iteration: int = 30, term_diff: float = 0.1) -> tuple:
 
     # Init particles randomly.
     position = np.random.uniform(left_boundary, right_boundary, (pop_size, 3))
@@ -34,6 +34,7 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
     gbest_fitness = None
     results = []
     frames = []
+    count_convergence = 0
 
     for gen_id in range(max_iteration):
         # Move particles according to vector.
@@ -46,6 +47,7 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
         fig = plt.figure()
         ax = plt.axes(projection='3d')
         ax.scatter(position[:, 0], position[:, 1], position[:, 2])
+        ax.set_title('Generation ' + str(gen_id + 1))
 
         for i, label in enumerate(fitness):
             ax.text(position[i][0], position[i][1], position[i][2], '%.2f' % (label,))
@@ -70,8 +72,16 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
         gbest_position = np.copy(pbest_position[index])
         gbest_fitness = pbest_fitness[index]
 
-        # Save result of this generation.
+        # Check if the result is convergent in this generation.
+        if len(results) > 0 and abs(gbest_fitness - results[-1][1]) < term_diff:
+            count_convergence += 1
+
+        # Save result for this generation.
         results.append([gbest_position, gbest_fitness])
+
+        # Check if the result is convergent for 10 times continuously.
+        if count_convergence >= 10:
+            break
 
         # Update vector for next generation.
         vector = w * vector + c1 * np.random.uniform(0, 1) * (pbest_position-position) + c2 * np.random.uniform(0, 1) * (gbest_position-position)
@@ -82,16 +92,16 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
 def pso_demo():
 
     # Run pso algorithm.
-    (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=-32, right_boundary=32, max_iteration=30)
+    (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.001)
 
     # Print table of records.
-    print('+-----+--------+--------------------------+')
+    print('+-----+----------+--------------------------------+')
     for (index, (point, fitness)) in enumerate(results):
-        print('| %3d   %6.2f   (%6.2f, %6.2f, %6.2f) |' % (index+1, fitness, point[0], point[1], point[2]))
-    print('+-----+--------+--------------------------+')
+        print('| %3d   %8.4f   (%8.4f, %8.4f, %8.4f) |' % (index+1, fitness, point[0], point[1], point[2]))
+    print('+-----+----------+--------------------------------+')
 
     print()
-    print('There is a min, %.2f, at (%.2f, %.2f, %.2f) !' % (gbest_fitness, gbest_position[0], gbest_position[1], gbest_position[2]))
+    print('There is a min, %.4f, at (%.4f, %.4f, %.4f) !' % (gbest_fitness, gbest_position[0], gbest_position[1], gbest_position[2]))
 
     # Create animation of records.
     create_gif('pso.gif', frames)
