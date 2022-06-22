@@ -1,6 +1,6 @@
 
 import numpy as np
-from tool import evaluate_problem, plot_population, create_gif, print_result
+from tool import *
 
 
 FLOAT_BITS = 6
@@ -201,14 +201,38 @@ def ga_algorithm(pop_size: int, crossover_prob: float, mutation_prob: float, lef
 
 def ga_demo():
 
-    # Run pso algorithm.
-    (gbest_position, gbest_fitness, results, frames) = ga_algorithm(pop_size=30, crossover_prob=0.5, mutation_prob=0.1, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.1)
+    TIMES = 10
+    solution = []
+    fitness = []
 
-    # Print table of records.
-    print_result(gbest_position, gbest_fitness, results)
+    # Run ten times.
+    for i in range(TIMES):
+        # Run pso algorithm.
+        (gbest_position, gbest_fitness, results, frames) = ga_algorithm(pop_size=50, crossover_prob=0.5, mutation_prob=0.1, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.1)
+        solution.append(gbest_position)
+        fitness.append(gbest_fitness)
 
-    # Create animation of records.
-    create_gif('ga', frames)
+        # Print table of records.
+        print_result(gbest_position, gbest_fitness, results)
+        tee('\n')
+
+        # Create animation of records.
+        create_gif('output/ga' + str(i + 1), frames)
+
+    # Write tee to disk.
+    write_tee('output/ga_gens')
+
+    # Convert list to numpy array for calculation convenience.
+    solution = np.array(solution)
+    fitness = np.array(fitness)
+
+    # Calculate mean and standard deviation.
+    mean = fitness.sum() / TIMES
+    std_deviation = ((fitness - mean) ** 2).sum() / TIMES
+
+    tee('Mean = %.4f' % (mean,))
+    tee('Standard Deviation = %.4f' % (std_deviation,))
+    write_tee('output/ga_summary')
 
 
 ga_demo()

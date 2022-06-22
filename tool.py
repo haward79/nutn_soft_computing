@@ -4,6 +4,27 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 
+_tee_msg = ''
+
+
+def tee(msg: str = '') -> None:
+
+    global _tee_msg
+
+    _tee_msg += msg + '\n'
+    print(msg)
+
+
+def write_tee(filename: str) -> None:
+
+    global _tee_msg
+
+    with open(filename + '.txt', 'w') as fout:
+        fout.write(_tee_msg)
+
+    _tee_msg = ''
+
+
 def evaluate_problem(input_set: np.ndarray) -> np.ndarray:
 
     answer_set = []
@@ -46,11 +67,10 @@ def create_gif(filename: str, frames: np.ndarray, interval: int = 300, loop: int
 
 def print_result(gbest_position: np.ndarray, gbest_fitness: float, results: list) -> None:
 
-    print('+-----+----------+--------------------------------+')
+    tee('+-----+----------+-----------------------------------+')
     for (index, (point, fitness)) in enumerate(results):
-        print('| %3d   %8.4f   (%8.4f, %8.4f, %8.4f) |' % (index + 1, fitness, point[0], point[1], point[2]))
-    print('+-----+----------+--------------------------------+')
+        tee('| %3d   %8.4f   (%9.4f, %9.4f, %9.4f) |' % (index + 1, fitness, point[0], point[1], point[2]))
+    tee('+-----+----------+-----------------------------------+')
 
-    print()
-    print('There is a min, %.4f, at (%.4f, %.4f, %.4f) !' % (
-    gbest_fitness, gbest_position[0], gbest_position[1], gbest_position[2]))
+    tee()
+    tee('There is a min, %.4f, at (%.4f, %.4f, %.4f) !' % (gbest_fitness, gbest_position[0], gbest_position[1], gbest_position[2]))

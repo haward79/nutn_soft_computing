@@ -1,6 +1,6 @@
 
 import numpy as np
-from tool import evaluate_problem, plot_population, create_gif, print_result
+from tool import *
 
 
 def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: float, right_boundary: float, max_iteration: int = 30, term_diff: float = 0.1) -> tuple:
@@ -58,14 +58,38 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
 
 def pso_demo():
 
-    # Run pso algorithm.
-    (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.001)
+    TIMES = 10
+    solution = []
+    fitness = []
 
-    # Print table of records.
-    print_result(gbest_position, gbest_fitness, results)
+    # Run ten times.
+    for i in range(TIMES):
+        # Run pso algorithm.
+        (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.001)
+        solution.append(gbest_position)
+        fitness.append(gbest_fitness)
 
-    # Create animation of records.
-    create_gif('pso', frames)
+        # Print table of records.
+        print_result(gbest_position, gbest_fitness, results)
+        tee('\n')
+
+        # Create animation of records.
+        create_gif('output/pso' + str(i+1), frames)
+
+    # Write tee to disk.
+    write_tee('output/pso_gens')
+
+    # Convert list to numpy array for calculation convenience.
+    solution = np.array(solution)
+    fitness = np.array(fitness)
+
+    # Calculate mean and standard deviation.
+    mean = fitness.sum() / TIMES
+    std_deviation = ((fitness - mean) ** 2).sum() / TIMES
+
+    tee('Mean = %.4f' % (mean,))
+    tee('Standard Deviation = %.4f' % (std_deviation,))
+    write_tee('output/pso_summary')
 
 
 pso_demo()
