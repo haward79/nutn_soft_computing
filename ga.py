@@ -209,7 +209,12 @@ def ga_algorithm(pop_size: int, crossover_prob: float, mutation_prob: float, lef
         if count_convergence >= 10:
             break
 
-    return (gen_solution, gen_fitness, results, frames)
+    results_np = np.array(results, dtype=object)
+    index = results_np[:, 1].argmin()
+    gbest_fitness = results_np[index, 1]
+    gbest_position = results_np[index, 0].copy()
+
+    return (gbest_position, gbest_fitness, results, frames)
 
 
 def ga_demo():
