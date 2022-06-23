@@ -59,13 +59,15 @@ def pso_algorithm(pop_size: int, w: float, c1: float, c2: float, left_boundary: 
 def pso_demo():
 
     TIMES = 10
+    LEFT_BOUNDARY = -32
+    RIGHT_BOUNDARY = 32
     solution = []
     fitness = []
 
     # Run ten times.
     for i in range(TIMES):
         # Run pso algorithm.
-        (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.001)
+        (gbest_position, gbest_fitness, results, frames) = pso_algorithm(pop_size=10, w=0.8, c1=0.8, c2=0.2, left_boundary=LEFT_BOUNDARY, right_boundary=RIGHT_BOUNDARY, max_iteration=100, term_diff=0.001)
         solution.append(gbest_position)
         fitness.append(gbest_fitness)
 
@@ -73,8 +75,11 @@ def pso_demo():
         print_result(gbest_position, gbest_fitness, results)
         tee('\n')
 
+        # Plot fitness for each generation.
+        plot_fitness(i+1, np.array(results, dtype=object)[:, 1], LEFT_BOUNDARY, RIGHT_BOUNDARY, 'output/pso_fitness' + str(i+1))
+
         # Create animation of records.
-        create_gif('output/pso' + str(i+1), frames)
+        create_gif('output/pso_population' + str(i+1), frames)
 
     # Write tee to disk.
     write_tee('output/pso_gens')

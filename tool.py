@@ -1,6 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 from PIL import Image
 
 
@@ -43,6 +44,7 @@ def plot_population(generation_id: int, population: np.ndarray, fitness: np.ndar
     ax.scatter(population[:, 0], population[:, 1], population[:, 2])
     ax.set_title('Generation ' + str(generation_id + 1))
 
+    # Plot fitness value as label.
     for i, label in enumerate(fitness):
         pass
         #ax.text(population[i][0], population[i][1], population[i][2], '%.2f' % (label,))
@@ -56,6 +58,20 @@ def plot_population(generation_id: int, population: np.ndarray, fitness: np.ndar
     plt.close(fig)
 
     return frame
+
+
+def plot_fitness(generation_id: int, fitness: np.ndarray, left_boundary: float, right_boundary: float, filename: str) -> None:
+
+    if len(filename) > 0:
+        fig, ax = plt.subplots()
+        ax.plot(np.arange(1, len(fitness)+1), fitness, 'bo')
+        ax.set_title('Fitness X Generation')
+        ax.set_ylim(left_boundary, right_boundary)
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.set_xlabel('Generation')
+        ax.set_ylabel('Fitness')
+        fig.savefig(filename + '.jpg')
+        plt.close(fig)
 
 
 def create_gif(filename: str, frames: np.ndarray, interval: int = 300, loop: int = 0) -> None:

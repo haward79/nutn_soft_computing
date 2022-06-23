@@ -84,29 +84,42 @@ def choose_parents(population: np.ndarray) -> np.ndarray:
 
 def crossover(parents: np.ndarray, prob: float) -> np.ndarray:
 
+    do_crossover_prob = prob / 2
     children = []
 
     for i in range(0, len(parents), 2):
-        # Do crossover for these parents.
+        # Parents.
         p1 = parents[i]
         p2 = parents[i + 1]
 
-        # Choose a break point.
-        assert len(p1) >= 2
-        index = np.random.choice(np.arange(len(p1) - 1)) + 1
+        # Do crossover.
+        if np.random.choice([False, True], p=[1-do_crossover_prob, do_crossover_prob]):
+            # Choose a break point.
+            assert len(p1) >= 2
+            index = np.random.choice(np.arange(len(p1) - 1)) + 1
 
-        # Decide whether to do a swap.
-        if np.random.choice([False, True], p=[1-prob, prob]):
-            n1 = p2[index:] + p1[:index]
-            n2 = p1[index:] + p2[:index]
-            children.append(n1)
-            children.append(n2)
+            # Decide whether to do a swap.
+            if np.random.choice([False, True], p=[1-prob, prob]):
+                n1 = p2[index:] + p1[:index]
+                n2 = p1[index:] + p2[:index]
+                children.append(n1)
+                children.append(n2)
 
+            else:
+                n1 = p1[:index] + p2[index:]
+                n2 = p2[:index] + p1[index:]
+                children.append(n1)
+                children.append(n2)
+
+        # Don't do crossover.
         else:
-            n1 = p1[:index] + p2[index:]
-            n2 = p2[:index] + p1[index:]
-            children.append(n1)
-            children.append(n2)
+            # Only save one of the parent.
+            if np.random.uniform(0, 1) >= 0.5:
+                children.append(p1)
+                children.append(p1)
+            else:
+                children.append(p2)
+                children.append(p2)
 
     return np.array(children)
 
@@ -202,13 +215,15 @@ def ga_algorithm(pop_size: int, crossover_prob: float, mutation_prob: float, lef
 def ga_demo():
 
     TIMES = 10
+    LEFT_BOUNDARY = -32
+    RIGHT_BOUNDARY = 32
     solution = []
     fitness = []
 
     # Run ten times.
     for i in range(TIMES):
         # Run pso algorithm.
-        (gbest_position, gbest_fitness, results, frames) = ga_algorithm(pop_size=50, crossover_prob=0.5, mutation_prob=0.1, left_boundary=-32, right_boundary=32, max_iteration=100, term_diff=0.1)
+        (gbest_position, gbest_fitness, results, frames) = ga_algorithm(pop_size=50, crossover_prob=0.6, mutation_prob=0.1, left_boundary=LEFT_BOUNDARY, right_boundary=RIGHT_BOUNDARY, max_iteration=100, term_diff=0.1)
         solution.append(gbest_position)
         fitness.append(gbest_fitness)
 
@@ -216,8 +231,11 @@ def ga_demo():
         print_result(gbest_position, gbest_fitness, results)
         tee('\n')
 
+        # Plot fitness for each generation.
+        plot_fitness(i + 1, np.array(results, dtype=object)[:, 1], LEFT_BOUNDARY, RIGHT_BOUNDARY, 'output/ga_fitness' + str(i + 1))
+
         # Create animation of records.
-        create_gif('output/ga' + str(i + 1), frames)
+        create_gif('output/ga_population' + str(i + 1), frames)
 
     # Write tee to disk.
     write_tee('output/ga_gens')
